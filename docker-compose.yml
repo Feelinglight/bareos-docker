@@ -1,0 +1,114 @@
+version: "3"
+services:
+  bareos-dir:
+    container_name: bareos-dir
+    image: feelinglight/bareos-dir:23.0.3
+    restart: unless-stopped
+    environment:
+      # Нужно только при первом запуске, после этого можно удалить
+      # - DB_INIT=true
+      # Нужно только при обновлении bareos, после этого можно удалить/закомментировать
+      # - DB_UPDATE=true
+      - BAREOS__DB_HOST=postgres-db
+      - BAREOS__DB_PORT=5432
+      - BAREOS__DB_NAME=bareos
+      - BAREOS__DB_USER=bareos
+      - BAREOS__DB_PASSWORD=bareos-db-password
+
+      - POSTGRES_ADMIN_USER=postgres
+      - POSTGRES_ADMIN_PASSWORD=postgres
+
+      - BAREOS__DIRECTOR_PASSWORD=bareos-director-password
+      - BAREOS__MONITOR_CONSOLE_PASSWORD=bareos-console-password
+      - BAREOS__WEBUI_CONSOLE_PASSWORD=bareos
+
+      - BAREOS__SD_ADDRESS=bareos-sd
+      - BAREOS__SD_PASSWORD=bareos-sd-password
+
+      - BAREOS__FD_DOCKER_ADDRESS=bareos-fd
+      - BAREOS__FD_DOCKER_PASSWORD=bareos-fd-password
+
+      - BAREOS__SMTP_ADDRESS=smtp.yandex.ru
+      - BAREOS__SMTP_PORT=587
+      - BAREOS__SMTP_LOGIN=login@yandex.ru
+      - BAREOS__SMTP_PASSWORD=yandex-password
+      - BAREOS__SMTP_FROM=Bareos <yandex-mail@yandex.ru>
+      - BAREOS__SMTP_TO=recip@mail.ru
+    ports:
+      - 9101:9101
+    volumes:
+      - ./services/bareos/config/etc_bareos/dir:/etc_bareos:ro
+      - ./services/bareos/config/scripts:/usr/local/bin/
+      - ./services/bareos/logs:/var/log/bareos
+      # Важно биндить, потому что если сделать обычный проброс, то докер автоматически создаст
+      # папку и будет писать туда бэкапы.
+      - type: bind
+        source: /media/backups_hdd/backups/
+        target: /backups
+
+      # Для отладки
+      # - ./services/bareos/docker/make_bareos_config.sh:/scripts/make_bareos_config.sh
+      # - ./services/bareos/docker/director-entrypoint.sh:/scripts/director-entrypoint.sh
+    depends_on:
+      postgres-db:
+        condition: service_healthy
+
+  bareos-sd:
+    container_name: bareos-sd
+    image: feelinglight/bareos-sd:23.0.3
+    restart: unless-stopped
+    ports:
+      - 9103:9103
+    environment:
+      - BAREOS__SD_PASSWORD=bareos-sd-password
+      - BAREOS__SD_MONITOR_PASSWORD=bareos-sd-monitor-password
+    volumes:
+      - ./services/bareos/config/etc_bareos/sd:/etc_bareos:ro
+      - type: bind
+        source: /media/backups_hdd/backups
+        target: /backups
+
+  bareos-fd:
+    container_name: bareos-fd
+    image: feelinglight/bareos-fd:23.0.3
+    restart: unless-stopped
+    environment:
+      - BAREOS__MONITOR_CONSOLE_PASSWORD=bareos-console-password
+      - BAREOS__FD_DOCKER_PASSWORD=bareos-fd-password
+    volumes:
+      - ./services/bareos/config/etc_bareos/fd:/etc_bareos:ro
+      - ./services/bareos/data/docker-fd-data:/docker-fd-data
+
+  bareos-webui:
+    container_name: bareos-webui
+    image: feelinglight/bareos-webui:23.0.3
+    restart: unless-stopped
+    environment:
+      - BAREOS__DIRECTOR_HOST=bareos-dir
+    volumes:
+      - ./services/bareos/config/etc_bareos/webui:/etc_bareos:ro
+
+  smtp-relay:
+    container_name: smtp-relay
+    image: juanluisbaptiste/postfix:1.7.1
+    restart: unless-stopped
+    environment:
+      - SMTP_SERVER=smtp.yandex.ru
+      - SMTP_USERNAME=login@yandex.ru
+      - SMTP_PASSWORD=yandex-password
+      - SERVER_HOSTNAME=smtp.bareos
+
+  postgres-db:
+    image: postgres:16
+    container_name: postgres-db
+    restart: unless-stopped
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    healthcheck:
+      test: pg_isready -U postgres
+      interval: 1s
+      retries: 20
+    volumes:
+      - ./services/postgres/data/:/var/lib/postgresql/data
+      - ./services/postgres/backup/:/backup

@@ -45,7 +45,7 @@ RUN apt-get update && apt-get install -y bareos-webui \
 
 EXPOSE 9100
 
-COPY etc_nginx/default /etc/nginx/sites-enabled/default
+COPY webui_nginx_default /etc/nginx/sites-enabled/default
 COPY webui-entrypoint.sh /scripts/webui-entrypoint.sh
 RUN chmod u+x /scripts/webui-entrypoint.sh
 

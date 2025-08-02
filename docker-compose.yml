@@ -1,37 +1,34 @@
-version: "3"
 services:
   bareos-dir:
     container_name: bareos-dir
     image: feelinglight/bareos-dir:23.0.3
     restart: unless-stopped
     environment:
-      # Нужно только при первом запуске, после этого можно удалить
-      # - DB_INIT=true
-      # Нужно только при обновлении bareos, после этого можно удалить/закомментировать
-      # - DB_UPDATE=true
+      # Должно быть true, если БД бареоса еще не инициализирована
+      - DB_INIT=false
+      # Должно быть true при обновлении bareos
+      - DB_UPDATE=false
+
       - BAREOS__DB_HOST=postgres-db
       - BAREOS__DB_PORT=5432
       - BAREOS__DB_NAME=bareos
       - BAREOS__DB_USER=bareos
-      - BAREOS__DB_PASSWORD=bareos-db-password
+      - BAREOS__DB_PASSWORD=${BAREOS_DB_PASSWORD}
 
-      - POSTGRES_ADMIN_USER=postgres
-      - POSTGRES_ADMIN_PASSWORD=postgres
+      - POSTGRES_ADMIN_USER=${POSTGRES_ADMIN_USER}
+      - POSTGRES_ADMIN_PASSWORD=${POSTGRES_ADMIN_PASSWORD}
 
-      - BAREOS__DIRECTOR_PASSWORD=bareos-director-password
-      - BAREOS__MONITOR_CONSOLE_PASSWORD=bareos-console-password
-      - BAREOS__WEBUI_CONSOLE_PASSWORD=bareos
+      - BAREOS__DIRECTOR_PASSWORD=${BAREOS_DIRECTOR_PASSWORD}
+      - BAREOS__MONITOR_CONSOLE_PASSWORD=${BAREOS_MONITOR_CONSOLE_PASSWORD}
+      - BAREOS__WEBUI_CONSOLE_PASSWORD=${BAREOS_WEBUI_CONSOLE_PASSWORD}
 
       - BAREOS__SD_ADDRESS=bareos-sd
-      - BAREOS__SD_PASSWORD=bareos-sd-password
+      - BAREOS__SD_PASSWORD=${BAREOS_SD_PASSWORD}
 
       - BAREOS__FD_DOCKER_ADDRESS=bareos-fd
-      - BAREOS__FD_DOCKER_PASSWORD=bareos-fd-password
+      - BAREOS__FD_DOCKER_PASSWORD=${BAREOS_FD_PASSWORD}
 
-      - BAREOS__SMTP_ADDRESS=smtp.yandex.ru
-      - BAREOS__SMTP_PORT=587
-      - BAREOS__SMTP_LOGIN=login@yandex.ru
-      - BAREOS__SMTP_PASSWORD=yandex-password
+      - BAREOS__SMTP_RELAY_ADDRESS=smtp-relay
       - BAREOS__SMTP_FROM=Bareos <yandex-mail@yandex.ru>
       - BAREOS__SMTP_TO=recip@mail.ru
     ports:
@@ -40,11 +37,7 @@ services:
       - ./services/bareos/config/etc_bareos/dir:/etc_bareos:ro
       - ./services/bareos/config/scripts:/usr/local/bin/
       - ./services/bareos/logs:/var/log/bareos
-      # Важно биндить, потому что если сделать обычный проброс, то докер автоматически создаст
-      # папку и будет писать туда бэкапы.
-      - type: bind
-        source: /media/backups_hdd/backups/
-        target: /backups
+      - ./services/bareos/backups:/backups
 
       # Для отладки
       # - ./services/bareos/docker/make_bareos_config.sh:/scripts/make_bareos_config.sh
@@ -60,21 +53,19 @@ services:
     ports:
       - 9103:9103
     environment:
-      - BAREOS__SD_PASSWORD=bareos-sd-password
-      - BAREOS__SD_MONITOR_PASSWORD=bareos-sd-monitor-password
+      - BAREOS__SD_PASSWORD=${BAREOS_SD_PASSWORD}
+      - BAREOS__SD_MONITOR_PASSWORD=${BAREOS_SD_MONITOR_PASSWORD}
     volumes:
       - ./services/bareos/config/etc_bareos/sd:/etc_bareos:ro
-      - type: bind
-        source: /media/backups_hdd/backups
-        target: /backups
+      - ./services/bareos/backups:/backups
 
   bareos-fd:
     container_name: bareos-fd
     image: feelinglight/bareos-fd:23.0.3
     restart: unless-stopped
     environment:
-      - BAREOS__MONITOR_CONSOLE_PASSWORD=bareos-console-password
-      - BAREOS__FD_DOCKER_PASSWORD=bareos-fd-password
+      - BAREOS__MONITOR_CONSOLE_PASSWORD=${BAREOS_MONITOR_CONSOLE_PASSWORD}
+      - BAREOS__FD_DOCKER_PASSWORD=${BAREOS_FD_PASSWORD}
     volumes:
       - ./services/bareos/config/etc_bareos/fd:/etc_bareos:ro
       - ./services/bareos/data/docker-fd-data:/docker-fd-data
@@ -93,18 +84,18 @@ services:
     image: juanluisbaptiste/postfix:1.7.1
     restart: unless-stopped
     environment:
-      - SMTP_SERVER=smtp.yandex.ru
-      - SMTP_USERNAME=login@yandex.ru
-      - SMTP_PASSWORD=yandex-password
-      - SERVER_HOSTNAME=smtp.bareos
+      - SMTP_SERVER=${BAREOS__SMTP_ADDRESS}
+      - SMTP_USERNAME=${BAREOS__SMTP_LOGIN}
+      - SMTP_PASSWORD=${BAREOS__SMTP_PASSWORD}
+      - SERVER_HOSTNAME=${BAREOS__SMTP_SENDER}
 
   postgres-db:
     image: postgres:16
     container_name: postgres-db
     restart: unless-stopped
     environment:
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_USER=${POSTGRES_ADMIN_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_ADMIN_PASSWORD}
     healthcheck:
       test: pg_isready -U postgres
       interval: 1s

@@ -1,3 +1,4 @@
 example/services/*/*
 !example/services/*/config
-!example/services/bareos-fd/data
+example/services/bareos-fd/data
+!example/services/bareos-fd/test-*

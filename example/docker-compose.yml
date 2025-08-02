@@ -5,9 +5,9 @@ services:
     restart: unless-stopped
     environment:
       # Должно быть true, если БД бареоса еще не инициализирована
-      - DB_INIT=false
+      - BAREOS__DB_INIT=false
       # Должно быть true при обновлении bareos
-      - DB_UPDATE=false
+      - BAREOS__DB_UPDATE=false
 
       - BAREOS__DB_HOST=postgres-db
       - BAREOS__DB_PORT=5432
@@ -34,10 +34,8 @@ services:
     ports:
       - 9101:9101
     volumes:
-      - ./services/bareos/config/etc_bareos/dir:/etc_bareos:ro
-      - ./services/bareos/config/scripts:/usr/local/bin/
-      - ./services/bareos/logs:/var/log/bareos
-      - ./services/bareos/backups:/backups
+      - ./services/bareos-dir/config/etc_bareos:/etc_bareos:ro
+      - ./services/bareos-dir/logs:/var/log/bareos
 
       # Для отладки
       # - ./services/bareos/docker/make_bareos_config.sh:/scripts/make_bareos_config.sh
@@ -56,8 +54,8 @@ services:
       - BAREOS__SD_PASSWORD=${BAREOS_SD_PASSWORD}
       - BAREOS__SD_MONITOR_PASSWORD=${BAREOS_SD_MONITOR_PASSWORD}
     volumes:
-      - ./services/bareos/config/etc_bareos/sd:/etc_bareos:ro
-      - ./services/bareos/backups:/backups
+      - ./services/bareos-sd/config/etc_bareos:/etc_bareos:ro
+      - ./services/bareos-sd/data/backups:/backups
 
   bareos-fd:
     container_name: bareos-fd
@@ -67,8 +65,8 @@ services:
       - BAREOS__MONITOR_CONSOLE_PASSWORD=${BAREOS_MONITOR_CONSOLE_PASSWORD}
       - BAREOS__FD_DOCKER_PASSWORD=${BAREOS_FD_PASSWORD}
     volumes:
-      - ./services/bareos/config/etc_bareos/fd:/etc_bareos:ro
-      - ./services/bareos/data/docker-fd-data:/docker-fd-data
+      - ./services/bareos-fd/config/etc_bareos:/etc_bareos:ro
+      - ./services/bareos-fd/data:/data
 
   bareos-webui:
     container_name: bareos-webui
@@ -77,7 +75,7 @@ services:
     environment:
       - BAREOS__DIRECTOR_HOST=bareos-dir
     volumes:
-      - ./services/bareos/config/etc_bareos/webui:/etc_bareos:ro
+      - ./services/bareos-webui/config/etc_bareos:/etc_bareos:ro
 
   smtp-relay:
     container_name: smtp-relay
@@ -102,4 +100,3 @@ services:
       retries: 20
     volumes:
       - ./services/postgres/data/:/var/lib/postgresql/data
-      - ./services/postgres/backup/:/backup

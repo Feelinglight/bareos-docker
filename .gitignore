@@ -1,0 +1,3 @@
+example/services/*/*
+!example/services/*/config
+!example/services/bareos-fd/data

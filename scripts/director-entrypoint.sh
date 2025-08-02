@@ -6,9 +6,9 @@ export PGHOST=${BAREOS__DB_HOST}
 export PGUSER=${POSTGRES_ADMIN_USER}
 export PGPASSWORD=${POSTGRES_ADMIN_PASSWORD}
 
-[[ -z "${DB_INIT}" ]] && DB_INIT='false'
+[[ -z "${BAREOS__DB_INIT}" ]] && BAREOS__DB_INIT='false'
 
-if [ "${DB_INIT}" == 'true' ]; then
+if [ "${BAREOS__DB_INIT}" == 'true' ]; then
   echo "Bareos DB init"
   echo "Bareos DB init: Create user ${BAREOS__DB_NAME}"
   psql -c "create user ${BAREOS__DB_NAME} with createdb createrole login;"
@@ -22,9 +22,9 @@ if [ "${DB_INIT}" == 'true' ]; then
   touch /etc/bareos/bareos-db.control
 fi
 
-[[ -z "${DB_UPDATE}" ]] && DB_UPDATE='false'
+[[ -z "${BAREOS__DB_UPDATE}" ]] && BAREOS__DB_UPDATE='false'
 
-if [ "${DB_UPDATE}" == 'true' ]; then
+if [ "${BAREOS__DB_UPDATE}" == 'true' ]; then
   echo "Bareoos DB update"
   echo "Bareoos DB update: Update tables"
   /usr/lib/bareos/scripts/update_bareos_tables

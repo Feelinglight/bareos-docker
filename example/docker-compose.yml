@@ -5,7 +5,7 @@ services:
     restart: unless-stopped
     environment:
       # Должно быть true, если БД bareos еще не инициализирована
-      - DB_INIT=false
+      - DB_INIT=true
       # Должно быть true при обновлении bareos
       - DB_UPDATE=false
 
@@ -20,6 +20,8 @@ services:
 
       - BAREOS__DIRECTOR_PASSWORD=${BAREOS_DIRECTOR_PASSWORD}
       - BAREOS__MONITOR_CONSOLE_PASSWORD=${BAREOS_MONITOR_CONSOLE_PASSWORD}
+
+      - BAREOS__WEBUI_LOGIN=${BAREOS_WEBUI_LOGIN}
       - BAREOS__WEBUI_CONSOLE_PASSWORD=${BAREOS_WEBUI_CONSOLE_PASSWORD}
 
       - BAREOS__SD_ADDRESS=bareos-sd

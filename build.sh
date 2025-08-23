@@ -3,6 +3,7 @@
 # NOCACHE="--no-cache"
 NOCACHE=
 BAREOS_VERSION="23.0.3"
+# ADD_BAREOS_REPO_URL
 
 docker build "${NOCACHE}" -t feelinglight/bareos-dir:${BAREOS_VERSION} -t feelinglight/bareos-dir:latest --target bareos-dir .
 docker build "${NOCACHE}" -t feelinglight/bareos-webui:${BAREOS_VERSION} -t feelinglight/bareos-webui:latest --target bareos-webui .

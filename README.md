@@ -7,25 +7,8 @@
 - bareos file daemon (fd)
 - bareos webui
 
-Версия образов и ссылка на репозиторий bareos указываются в скрипте **build.sh**.
-Этим скриптом можно собрать образы и запушить их на dockerhub.
 
 Примеры запуска всех образов есть в **example/**.
-
-
-# Образы
-
-Во все образы добавляются:
-
-- репозитории bareos
-- скрипт **make_bareos_config.sh**
-- entrypoint (у каждого образа свой)
-
-Все entrypoint-ы запускают скрипт **make_bareos_config.sh**.
-Webui, кроме скрипта, запускает **php-fpm**.
-
-CMD у всех образов, кроме webui - соответствующий демон bareos (bareos-dir, bareos-sd, bareos-fd).
-CMD У webui - nginx.
 
 
 ## Переменные окружения
@@ -85,4 +68,29 @@ Catalog {
   # ...
 }
 ```
+
+
+## Сборка образов
+
+Во все образы добавляются:
+
+- репозитории bareos
+- скрипт **make_bareos_config.sh**
+- entrypoint (у каждого образа свой)
+
+Все entrypoint-ы запускают скрипт **make_bareos_config.sh**.
+Webui, кроме скрипта, запускает **php-fpm**.
+
+CMD у всех образов, кроме webui - соответствующий демон bareos (bareos-dir, bareos-sd, bareos-fd).
+CMD У webui - nginx.
+
+
+### Запуск сборки
+
+Для сборки используется скрипт **build.sh**, в котором нужно указать переменные
+
+- ``BAREOS_VERSION="24.0.5~pre32.7c5f79a1e"`` - версия пакетов bareos. Используется только для тэга
+  образов
+- ``DISTRO="xUbuntu_24.04"`` - дистрибутив, под который собраны пакеты bareos. Значение должно быть
+  равно имени одной из папок на https://download.bareos.org/current/
 

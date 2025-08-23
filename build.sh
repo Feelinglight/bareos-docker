@@ -1,9 +1,12 @@
 #!/bin/bash
 
+# Этой версией будут тэгнуты докер образы
+BAREOS_VERSION="24.0.5~pre32.7c5f79a1e"
+# Дистрибутив, для которого собраны пакеты bareos
+DISTRO="xUbuntu_24.04"
+
 # NOCACHE="--no-cache"
 NOCACHE=
-BAREOS_VERSION="23.0.3"
-# ADD_BAREOS_REPO_URL
 
 docker build "${NOCACHE}" -t feelinglight/bareos-dir:${BAREOS_VERSION} -t feelinglight/bareos-dir:latest --target bareos-dir .
 docker build "${NOCACHE}" -t feelinglight/bareos-webui:${BAREOS_VERSION} -t feelinglight/bareos-webui:latest --target bareos-webui .

@@ -1,7 +1,9 @@
 FROM ubuntu:22.04 as bareos-base
 
+ARG distro
+
 ENV DEBIAN_FRONTEND noninteractive
-ENV ADD_BAREOS_REPO_URL "https://download.bareos.org/current/xUbuntu_22.04/add_bareos_repositories.sh"
+ENV ADD_BAREOS_REPO_URL "https://download.bareos.org/current/$distro/add_bareos_repositories.sh"
 ENV ADD_BAREOS_REPO_PATH /tmp/add_bareos_repositories.sh
 
 RUN apt-get update && apt-get install -y \

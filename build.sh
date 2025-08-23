@@ -3,7 +3,7 @@
 set -e
 
 # Этой версией будут тэгнуты докер образы
-BAREOS_VERSION="24.0.5~pre32.7c5f79a1e"
+BAREOS_VERSION="24.0.5-pre32.7c5f79a1e"
 # Дистрибутив, для которого собраны пакеты bareos
 DISTRO="xUbuntu_24.04"
 

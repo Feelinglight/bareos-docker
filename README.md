@@ -21,6 +21,8 @@
 - ``DB_UPDATE=true`` - запуск миграцию БД при старте контейнера. Нужно запускать при каждом
   обновлении bareos.
 - ``BAREOS__DB_HOST`` - адрес БД.
+- ``BAREOS__DB_NAME`` - имя БД bareos.
+- ``BAREOS__DB_PASSWORD`` - пароль от БД bareos.
 - ``POSTGRES_ADMIN_USER`` - имя админа postgres.
 - ``POSTGRES_ADMIN_PASSWORD`` - пароль админа postgres.
 
@@ -94,3 +96,4 @@ CMD У webui - nginx.
 - ``DISTRO="xUbuntu_24.04"`` - дистрибутив, под который собраны пакеты bareos. Значение должно быть
   равно имени одной из папок на https://download.bareos.org/current/
 
+  При изменении этой переменной нужно менять базовый образ в Dockerfile

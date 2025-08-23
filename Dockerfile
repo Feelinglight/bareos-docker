@@ -1,10 +1,15 @@
-FROM ubuntu:22.04 as bareos-base
+FROM ubuntu:24.04 as bareos-base
 
 ARG distro
 
 ENV DEBIAN_FRONTEND noninteractive
 ENV ADD_BAREOS_REPO_URL "https://download.bareos.org/current/$distro/add_bareos_repositories.sh"
 ENV ADD_BAREOS_REPO_PATH /tmp/add_bareos_repositories.sh
+
+RUN if [ -z "$distro" ]; then \
+    echo "Error: distro is required but not set."; \
+    exit 1; \
+fi
 
 RUN apt-get update && apt-get install -y \
     curl \
@@ -14,7 +19,7 @@ RUN apt-get update && apt-get install -y \
 
 RUN curl -Ls "$ADD_BAREOS_REPO_URL" -o "$ADD_BAREOS_REPO_PATH" && bash "$ADD_BAREOS_REPO_PATH"
 
-COPY make_bareos_config.sh /scripts/make_bareos_config.sh
+COPY scripts/make_bareos_config.sh /scripts/make_bareos_config.sh
 
 
 # --------------- bareos-dir ---------------
@@ -28,7 +33,7 @@ RUN apt-get update && apt-get install -y \
 
 EXPOSE 9101
 
-COPY director-entrypoint.sh /scripts/director-entrypoint.sh
+COPY scripts/director-entrypoint.sh /scripts/director-entrypoint.sh
 RUN chmod u+x /scripts/director-entrypoint.sh
 
 ENTRYPOINT ["/scripts/director-entrypoint.sh"]
@@ -46,7 +51,7 @@ RUN apt-get update && apt-get install -y \
 EXPOSE 9100
 
 COPY webui_nginx_default /etc/nginx/sites-enabled/default
-COPY webui-entrypoint.sh /scripts/webui-entrypoint.sh
+COPY scripts/webui-entrypoint.sh /scripts/webui-entrypoint.sh
 RUN chmod u+x /scripts/webui-entrypoint.sh
 
 ENTRYPOINT ["/scripts/webui-entrypoint.sh"]
@@ -62,7 +67,7 @@ RUN apt-get update && apt-get install -y \
 
 EXPOSE 9103
 
-COPY sd-entrypoint.sh /scripts/sd-entrypoint.sh
+COPY scripts/sd-entrypoint.sh /scripts/sd-entrypoint.sh
 RUN chmod u+x /scripts/sd-entrypoint.sh
 
 ENTRYPOINT ["/scripts/sd-entrypoint.sh"]
@@ -78,7 +83,7 @@ RUN apt-get update && apt-get install -y \
 
 EXPOSE 9102
 
-COPY fd-entrypoint.sh /scripts/fd-entrypoint.sh
+COPY scripts/fd-entrypoint.sh /scripts/fd-entrypoint.sh
 RUN chmod u+x /scripts/fd-entrypoint.sh
 
 ENTRYPOINT ["/scripts/fd-entrypoint.sh"]
